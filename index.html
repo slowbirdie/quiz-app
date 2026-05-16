@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>知识检测</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; }
+    .question { font-size: 1.3em; margin-bottom: 20px; }
+    .option { display: block; margin: 10px 0; padding: 12px; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; }
+    .option:hover { background: #f0f0f0; }
+    .result { margin-top: 20px; padding: 10px; font-weight: bold; }
+    .correct { color: green; }
+    .wrong { color: red; }
+    button { padding: 10px 20px; font-size: 1em; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div id="quiz">
+    <div class="question" id="questionText"></div>
+    <div id="optionsContainer"></div>
+    <button id="nextBtn" style="display:none;">下一题</button>
+    <div class="result" id="resultText"></div>
+  </div>
+  <script>
+    let currentQuestion = null;
+    async function loadQuestion() {
+      document.getElementById('nextBtn').style.display = 'none';
+      document.getElementById('resultText').textContent = '';
+      const res = await fetch('/api/question');
+      currentQuestion = await res.json();
+      document.getElementById('questionText').textContent = currentQuestion.question;
+      const container = document.getElementById('optionsContainer');
+      container.innerHTML = '';
+      currentQuestion.options.forEach((opt, idx) => {
+        const div = document.createElement('div');
+        div.className = 'option';
+        div.textContent = opt;
+        div.onclick = () => checkAnswer(idx);
+        container.appendChild(div);
+      });
+    }
+    async function checkAnswer(index) {
+      const res = await fetch('/api/answer', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ id: currentQuestion.id, answer: index })
+      });
+      const result = await res.json();
+      const resultDiv = document.getElementById('resultText');
+      resultDiv.textContent = result.correct ? '✅ 回答正确！' : '❌ ' + (result.explanation || '回答错误');
+      resultDiv.className = 'result ' + (result.correct ? 'correct' : 'wrong');
+      document.getElementById('nextBtn').style.display = 'block';
+      document.querySelectorAll('.option').forEach(el => el.onclick = null);
+    }
+    document.getElementById('nextBtn').addEventListener('click', loadQuestion);
+    loadQuestion();
+  </script>
+</body>
+</html>
