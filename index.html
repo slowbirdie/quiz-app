@@ -2,532 +2,59 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>知识挑战营 · 自动进阶答题</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>知识检测</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      background: linear-gradient(145deg, #f0f7ff 0%, #e9eef5 100%);
-      font-family: 'Segoe UI', 'Poppins', system-ui, -apple-system, 'Inter', sans-serif;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 24px;
-    }
-
-    /* 主卡片 */
-    .quiz-card {
-      max-width: 750px;
-      width: 100%;
-      background: rgba(255, 255, 255, 0.96);
-      backdrop-filter: blur(0px);
-      border-radius: 56px;
-      box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.25), 0 2px 6px rgba(0, 0, 0, 0.02);
-      padding: 2rem 2rem 2.2rem;
-      transition: all 0.2s ease;
-      border: 1px solid rgba(255,255,255,0.6);
-    }
-
-    /* 头部计分器 + 重置 */
-    .quiz-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      flex-wrap: wrap;
-      margin-bottom: 28px;
-      padding-bottom: 12px;
-      border-bottom: 2px solid #eef2f9;
-    }
-
-    .score-area {
-      background: #2e3b4e;
-      background: linear-gradient(135deg, #1f2b38, #2c3e4e);
-      padding: 8px 20px;
-      border-radius: 60px;
-      color: white;
-      font-weight: 600;
-      font-size: 1.4rem;
-      letter-spacing: 1px;
-      box-shadow: inset 0 1px 1px rgba(255,255,255,0.2), 0 4px 8px rgba(0,0,0,0.1);
-    }
-
-    .score-label {
-      font-size: 0.85rem;
-      font-weight: 400;
-      margin-right: 6px;
-      opacity: 0.85;
-    }
-
-    .score-value {
-      font-weight: 800;
-      font-size: 1.7rem;
-      line-height: 1;
-      margin-left: 4px;
-    }
-
-    .reset-btn {
-      background: rgba(100, 108, 255, 0.1);
-      border: 1px solid #cdd9ff;
-      padding: 8px 20px;
-      border-radius: 40px;
-      font-size: 0.85rem;
-      font-weight: 500;
-      color: #2c3e66;
-      cursor: pointer;
-      transition: 0.2s;
-      backdrop-filter: blur(4px);
-    }
-
-    .reset-btn:hover {
-      background: #2c3e66;
-      color: white;
-      border-color: #2c3e66;
-      transform: scale(0.96);
-    }
-
-    /* 题目区域 */
-    .question-box {
-      background: #ffffffea;
-      border-radius: 40px;
-      padding: 28px 24px;
-      margin: 12px 0 24px 0;
-      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.03);
-      border: 1px solid #eef2fc;
-    }
-
-    .question-text {
-      font-size: 1.7rem;
-      font-weight: 700;
-      line-height: 1.35;
-      color: #0a1c2f;
-      letter-spacing: -0.2px;
-    }
-
-    /* 选项样式 */
-    .options-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      margin: 10px 0 20px;
-    }
-
-    .option {
-      background: #f8fafd;
-      border: 1.5px solid #e2e9f2;
-      border-radius: 28px;
-      padding: 15px 20px;
-      font-size: 1.05rem;
-      font-weight: 500;
-      color: #1f2f44;
-      cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-      backdrop-filter: blur(2px);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .option:hover:not(.disabled-opt) {
-      background: #eef3ff;
-      border-color: #8ba5ff;
-      transform: translateX(5px);
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-    }
-
-    .option-prefix {
-      font-weight: 800;
-      background: #e4ebf5;
-      width: 32px;
-      height: 32px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 60px;
-      color: #2d4a7c;
-    }
-
-    /* 反馈信息区 */
-    .feedback-area {
-      margin: 20px 0 16px;
-      padding: 12px 18px;
-      border-radius: 28px;
-      background: #f1f5f9;
-      transition: 0.15s;
-    }
-
-    .result {
-      font-size: 1rem;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .correct {
-      color: #0f7b3a;
-      background: #e0f9e9;
-      padding: 12px 20px;
-      border-radius: 40px;
-    }
-
-    .wrong {
-      color: #b13e3e;
-      background: #ffe8e8;
-      padding: 12px 20px;
-      border-radius: 40px;
-    }
-
-    .explanation-text {
-      font-size: 0.9rem;
-      margin-top: 8px;
-      opacity: 0.85;
-      font-weight: 400;
-    }
-
-    /* 下一题按钮 (答错后手动) */
-    .next-btn-wrapper {
-      text-align: center;
-      margin-top: 8px;
-    }
-
-    #nextBtn {
-      background: #2c3e66;
-      border: none;
-      padding: 14px 32px;
-      font-size: 1rem;
-      font-weight: 600;
-      border-radius: 50px;
-      color: white;
-      cursor: pointer;
-      transition: 0.2s;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 260px;
-      letter-spacing: 1px;
-    }
-
-    #nextBtn:hover {
-      background: #1f2f4a;
-      transform: scale(0.97);
-    }
-
-    /* 自动跳转提示小字 */
-    .auto-hint {
-      font-size: 0.7rem;
-      text-align: center;
-      margin-top: 12px;
-      color: #6f7c91;
-      background: #eef2f9;
-      display: inline-block;
-      width: auto;
-      padding: 4px 14px;
-      border-radius: 60px;
-    }
-
-    /* 加载状态 */
-    .loading-blur {
-      opacity: 0.6;
-      pointer-events: none;
-    }
-
-    footer {
-      font-size: 0.7rem;
-      text-align: center;
-      margin-top: 28px;
-      color: #8c9bb0;
-    }
-
-    @media (max-width: 550px) {
-      .quiz-card {
-        padding: 1.5rem;
-      }
-      .question-text {
-        font-size: 1.35rem;
-      }
-      .option {
-        padding: 12px 16px;
-      }
-      .score-value {
-        font-size: 1.4rem;
-      }
-    }
+    body { font-family: system-ui, sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; }
+    .question { font-size: 1.3em; margin-bottom: 20px; }
+    .option { display: block; margin: 10px 0; padding: 12px; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; }
+    .option:hover { background: #f0f0f0; }
+    .result { margin-top: 20px; padding: 10px; font-weight: bold; }
+    .correct { color: green; }
+    .wrong { color: red; }
+    button { padding: 10px 20px; font-size: 1em; cursor: pointer; }
   </style>
 </head>
 <body>
-<div class="quiz-card" id="quizCard">
-  <div class="quiz-header">
-    <div class="score-area">
-      <span class="score-label">🏆 累计正确</span>
-      <span class="score-value" id="scoreValue">0</span>
-    </div>
-    <button class="reset-btn" id="resetScoreBtn">⟳ 重置分数</button>
+  <div id="quiz">
+    <div class="question" id="questionText"></div>
+    <div id="optionsContainer"></div>
+    <button id="nextBtn" style="display:none;">下一题</button>
+    <div class="result" id="resultText"></div>
   </div>
-
-  <div class="question-box">
-    <div class="question-text" id="questionText">加载精彩题目中...</div>
-  </div>
-
-  <div id="optionsContainer" class="options-grid"></div>
-
-  <div class="feedback-area" id="resultArea">
-    <div id="resultText" class="result"></div>
-    <div id="explanationDetail" class="explanation-text"></div>
-  </div>
-
-  <div class="next-btn-wrapper">
-    <button id="nextBtn" style="display: none;">➡ 下一题</button>
-  </div>
-  <div class="auto-hint" id="autoHint">✨ 答对自动跳转下一题 · 答错需手动继续</div>
-  <footer>⚡ 知识闯关 · 智慧进阶</footer>
-</div>
-
-<script>
-  // ----- 全局变量 -----
-  let currentQuestion = null;           // 当前题目对象
-  let userScore = 0;                   // 正确计数总分
-  let canAnswer = true;                // 是否允许回答（防止并发/加载中）
-  let autoJumpTimer = null;            // 自动跳转定时器
-  let isLoading = false;               // 是否正在加载新题目
-  let optionsLocked = false;           // 选项是否已被锁定（已回答过）
-
-  // DOM 元素
-  const questionEl = document.getElementById('questionText');
-  const optionsContainer = document.getElementById('optionsContainer');
-  const nextBtn = document.getElementById('nextBtn');
-  const resultTextEl = document.getElementById('resultText');
-  const explanationDetailEl = document.getElementById('explanationDetail');
-  const scoreSpan = document.getElementById('scoreValue');
-  const resetScoreBtn = document.getElementById('resetScoreBtn');
-
-  // ----- 辅助函数：更新分数显示 -----
-  function updateScoreUI() {
-    scoreSpan.innerText = userScore;
-  }
-
-  // 重置分数
-  function resetScore() {
-    userScore = 0;
-    updateScoreUI();
-    // 可选: 添加一个简短的小提示（不影响答题）
-    const tempMsg = resultTextEl;
-    if (!resultTextEl.innerText.includes('正确')) {
-      // 不覆盖当前反馈，仅做轻提醒可以忽略，为了体验什么都不覆盖
-    }
-  }
-
-  // 加分
-  function addScore() {
-    userScore++;
-    updateScoreUI();
-  }
-
-  // 清除自动跳转定时器
-  function clearAutoTimer() {
-    if (autoJumpTimer) {
-      clearTimeout(autoJumpTimer);
-      autoJumpTimer = null;
-    }
-  }
-
-  // 禁用所有选项点击（视觉上移除绑定 + 添加禁用类）
-  function disableOptionsClick() {
-    const allOpts = document.querySelectorAll('.option');
-    allOpts.forEach(opt => {
-      opt.style.pointerEvents = 'none';
-      opt.classList.add('disabled-opt');
-    });
-  }
-
-  // 启用选项点击（在加载新题目之后重新绑定，不需要额外启用，因为渲染时会创建新的元素）
-  // 实际启用是在 renderNewQuestion 后重新生成节点，自然启用
-
-  // 渲染当前题目（新题目）
-  function renderQuestion(questionData) {
-    // 清空容器
-    optionsContainer.innerHTML = '';
-    // 设置题目文本
-    questionEl.textContent = questionData.question;
-    // 生成选项
-    const letters = ['A', 'B', 'C', 'D'];
-    questionData.options.forEach((opt, idx) => {
-      const optionDiv = document.createElement('div');
-      optionDiv.className = 'option';
-      optionDiv.setAttribute('data-opt-index', idx);
-      // 增加前缀圈圈
-      const prefixSpan = document.createElement('span');
-      prefixSpan.className = 'option-prefix';
-      prefixSpan.innerText = letters[idx] || String.fromCharCode(65+idx);
-      const textSpan = document.createElement('span');
-      textSpan.innerText = opt;
-      optionDiv.appendChild(prefixSpan);
-      optionDiv.appendChild(textSpan);
-      optionDiv.onclick = (e) => {
-        e.stopPropagation();
-        if (!canAnswer || isLoading || optionsLocked) return;
-        checkAnswer(idx);
-      };
-      optionsContainer.appendChild(optionDiv);
-    });
-    // 重置锁标志
-    optionsLocked = false;
-    canAnswer = true;
-    isLoading = false;
-    // 确保下一题按钮是隐藏状态（新题目到来时）
-    nextBtn.style.display = 'none';
-    // 清除反馈区域内容（但保留一些占位清爽）
-    resultTextEl.innerHTML = '';
-    explanationDetailEl.innerHTML = '';
-    resultTextEl.className = 'result';
-    // 清除额外样式
-    const resultAreaDiv = document.getElementById('resultArea');
-    // 不做额外处理
-  }
-
-  // 调用后端获取随机题目
-  async function loadQuestion() {
-    // 防止并发加载
-    if (isLoading) return;
-    isLoading = true;
-    canAnswer = false;       // 加载期间禁止回答
-    clearAutoTimer();       // 清除可能残留的自动跳转
-
-    // 禁用选项点击的视觉效果（重置前禁用旧选项点击）
-    const oldOptions = document.querySelectorAll('.option');
-    oldOptions.forEach(opt => {
-      opt.style.pointerEvents = 'none';
-      opt.onclick = null;
-    });
-
-    // 隐藏手动下一题按钮
-    nextBtn.style.display = 'none';
-    // 显示加载占位效果
-    questionEl.textContent = '🔄 加载新挑战...';
-    optionsContainer.innerHTML = '<div style="padding:20px;text-align:center">✨ 准备题目中 ✨</div>';
-
-    try {
+  <script>
+    let currentQuestion = null;
+    async function loadQuestion() {
+      document.getElementById('nextBtn').style.display = 'none';
+      document.getElementById('resultText').textContent = '';
       const res = await fetch('/api/question');
-      if (!res.ok) throw new Error('网络错误');
-      const questionData = await res.json();
-      currentQuestion = questionData;
-      // 渲染新题目（重新启用点击）
-      renderQuestion(currentQuestion);
-    } catch (err) {
-      console.error('加载题目失败:', err);
-      questionEl.textContent = '⚠️ 题目加载失败，请刷新页面重试';
-      optionsContainer.innerHTML = '<div style="padding:20px;text-align:center;color:red">连接服务器出错，请稍后重试</div>';
-      canAnswer = false;
-      isLoading = false;
-    } finally {
-      // 已经在 renderQuestion 中设置了 isLoading = false & canAnswer = true
-      // 但如果出错没有调用renderQuestion，需要重置标志
-      if (!currentQuestion) {
-        isLoading = false;
-        canAnswer = true;  // 防止永久锁死，但无题目不可答
-      }
+      currentQuestion = await res.json();
+      document.getElementById('questionText').textContent = currentQuestion.question;
+      const container = document.getElementById('optionsContainer');
+      container.innerHTML = '';
+      currentQuestion.options.forEach((opt, idx) => {
+        const div = document.createElement('div');
+        div.className = 'option';
+        div.textContent = opt;
+        div.onclick = () => checkAnswer(idx);
+        container.appendChild(div);
+      });
     }
-  }
-
-  // 处理答案验证 + 自动跳转逻辑 + 加分
-  async function checkAnswer(selectedIdx) {
-    // 安全检查
-    if (!canAnswer || isLoading || optionsLocked) return;
-    if (!currentQuestion) return;
-
-    // 立即锁定选项，防止二次点击
-    optionsLocked = true;
-    canAnswer = false;          // 回答后不能再点其他选项
-    disableOptionsClick();      // 视觉禁用
-
-    // 显示“思考中”微反馈
-    resultTextEl.innerHTML = '🤔 验证答案中...';
-    resultTextEl.className = 'result';
-
-    try {
+    async function checkAnswer(index) {
       const res = await fetch('/api/answer', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: currentQuestion.id,
-          answer: selectedIdx
-        })
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ id: currentQuestion.id, answer: index })
       });
-      if (!res.ok) throw new Error('答案校验失败');
       const result = await res.json();
-      const isCorrect = result.correct;
-      const explanation = result.explanation || (isCorrect ? '完美！' : '再试试看～');
-
-      // 显示反馈内容（包含解释）
-      if (isCorrect) {
-        resultTextEl.innerHTML = '✅ 回答正确！ +1分';
-        resultTextEl.className = 'result correct';
-        explanationDetailEl.innerHTML = `📘 ${explanation}`;
-        // 加分
-        addScore();
-        // 正确 => 自动跳转下一题 (延迟0.6s, 让用户看到正确反馈)
-        clearAutoTimer();   // 清除旧定时器确保唯一
-        autoJumpTimer = setTimeout(() => {
-          // 跳转前无需额外操作，直接加载下一题
-          // 但必须确保此时不会残留上一个题目的点击锁
-          autoJumpTimer = null;
-          loadQuestion();   // 重新加载题目，内部重置各种锁和样式
-        }, 600);
-      } else {
-        resultTextEl.innerHTML = '❌ 回答错误';
-        resultTextEl.className = 'result wrong';
-        explanationDetailEl.innerHTML = `💡 ${explanation}`;
-        // 错误时显示“下一题”按钮，手动跳转，不自动跳转
-        nextBtn.style.display = 'block';
-        // 答错保持锁定，让用户必须点下一题，不能再次选
-        // canAnswer 已经是 false, 无需额外动作；等待用户点击下一题
-      }
-    } catch (err) {
-      console.error('校验出错:', err);
-      resultTextEl.innerHTML = '⚠️ 网络开小差，请重试';
-      resultTextEl.className = 'result wrong';
-      explanationDetailEl.innerHTML = '无法连接服务器，刷新页面试试';
-      // 出错时恢复选项锁定? 让用户可点击重试? 但为了体验，展示手动下一题
-      nextBtn.style.display = 'block';
-      canAnswer = false;
+      const resultDiv = document.getElementById('resultText');
+      resultDiv.textContent = result.correct ? '✅ 回答正确！' : '❌ ' + (result.explanation || '回答错误');
+      resultDiv.className = 'result ' + (result.correct ? 'correct' : 'wrong');
+      document.getElementById('nextBtn').style.display = 'block';
+      document.querySelectorAll('.option').forEach(el => el.onclick = null);
     }
-    // 如果正确，不用额外操作（定时器负责加载），如果错误已经在catch或分支外设置nextBtn
-    // 额外注意: 在正确的情况下，已经把canAnswer设为false，并且optionsLocked true; 在跳转loadQuestion里全部重置
-  }
-
-  // 手动下一题按钮逻辑（主要是答错后使用, 也用在某些边界）
-  function onManualNext() {
-    if (isLoading) return;
-    // 清除自动跳转定时器（避免冲突）
-    clearAutoTimer();
-    // 如果存在当前题目且未加载中，强制加载新的题目
+    document.getElementById('nextBtn').addEventListener('click', loadQuestion);
     loadQuestion();
-  }
-
-  // 重置分数按钮监听
-  resetScoreBtn.addEventListener('click', () => {
-    resetScore();
-    // 可选轻微闪烁反馈
-    const oldScoreDiv = document.querySelector('.score-area');
-    oldScoreDiv.style.transform = 'scale(0.98)';
-    setTimeout(() => { if(oldScoreDiv) oldScoreDiv.style.transform = ''; }, 150);
-  });
-
-  // 绑定下一题按钮事件
-  nextBtn.addEventListener('click', onManualNext);
-
-  // 页面启动：加载首题
-  loadQuestion();
-
-  // 附加功能：如果组件在正确自动跳转过程中用户误点已经隐藏的nextBtn不会影响，loadQuestion里有防抖
-  // 另外针对移动设备优化, 清除任何因延迟导致的额外重复提交
-  window.addEventListener('beforeunload', () => {
-    if (autoJumpTimer) clearTimeout(autoJumpTimer);
-  });
-</script>
+  </script>
 </body>
 </html>
