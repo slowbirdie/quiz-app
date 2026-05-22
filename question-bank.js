@@ -82,7 +82,7 @@ const QUESTION_BANK = [
     question: "HTML5 中哪个元素用于绘制图形？",
     options: ["svg", "canvas", "graphics", "vector"],
     answer: 1,
-    explanation: "<canvas> 元素用于通过 JavaScript 绘制位图图形。"
+    explanation: "canvas元素用于通过 JavaScript 绘制位图图形。"
   }
 ];
 
