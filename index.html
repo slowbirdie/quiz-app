@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
   <title>知识闯关 · 互动测验</title>
   <style>
+    /* 全局重置，确保嵌入时无额外边距和滚动 */
     * {
       margin: 0;
       padding: 0;
@@ -12,61 +13,71 @@
     }
 
     body {
-      background: linear-gradient(145deg, #f6f9fc 0%, #edf2f7 100%);
+      /* 默认背景透明，适合嵌入任何底色页面 */
+      background: transparent;
       font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-      min-height: 100vh;
+      min-height: auto;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 24px;
+      padding: 8px;  /* 内边距减小，让内容更贴合 */
     }
 
-    /* 主卡片 - 精致玻璃质感 */
+    /* 主卡片 - 适配嵌入模式的精致样式 */
     .quiz-card {
-      max-width: 700px;
+      max-width: 650px;
       width: 100%;
-      background: rgba(255, 255, 255, 0.96);
-      backdrop-filter: blur(2px);
-      border-radius: 44px;
-      box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(156, 180, 200, 0.2);
+      background: rgba(255, 255, 255, 0.98);
+      border-radius: 32px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.03);
       overflow: hidden;
       transition: all 0.2s ease;
+      /* 避免 margin 塌陷引起额外滚动 */
+      margin: 0 auto;
     }
 
-    /* 头部计分栏 + 活力装饰 */
+    /* 如果通过 URL 参数 ?embed=true 则进一步微调嵌入样式 */
+    body.embed-mode .quiz-card {
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03), 0 0 0 1px #eef2f6;
+      border-radius: 28px;
+    }
+    body.embed-mode {
+      padding: 0;
+    }
+
+    /* 头部计分栏 (精致紧凑) */
     .quiz-header {
       background: #ffffffdd;
-      padding: 20px 28px 12px 28px;
-      border-bottom: 1px solid #e9edf2;
+      padding: 16px 24px 12px 24px;
+      border-bottom: 1px solid #eef2f8;
       display: flex;
       justify-content: space-between;
-      align-items: baseline;
+      align-items: center;
       flex-wrap: wrap;
-      gap: 12px;
+      gap: 10px;
     }
 
     .score-board {
       background: #1e2a3e;
-      padding: 6px 16px;
-      border-radius: 60px;
+      padding: 5px 14px;
+      border-radius: 40px;
       color: white;
       font-weight: 600;
-      font-size: 0.9rem;
-      letter-spacing: 0.5px;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 2px 5px rgba(0,0,0,0.05);
+      font-size: 0.85rem;
+      letter-spacing: 0.3px;
     }
 
     .score-board span {
       color: #ffd966;
-      font-size: 1.25rem;
+      font-size: 1.1rem;
       margin-right: 4px;
     }
 
     .badge-tag {
       background: #eef2ff;
-      padding: 5px 12px;
-      border-radius: 40px;
-      font-size: 0.75rem;
+      padding: 4px 12px;
+      border-radius: 32px;
+      font-size: 0.7rem;
       font-weight: 600;
       color: #1e40af;
       display: inline-flex;
@@ -74,247 +85,181 @@
       gap: 6px;
     }
 
-    .badge-tag i {
-      font-style: normal;
-      font-size: 1rem;
-    }
-
-    /* 主体内容 */
+    /* 主体内边距优化 */
     .quiz-body {
-      padding: 28px 28px 36px;
-    }
-
-    /* 问题区域 */
-    .question-area {
-      margin-bottom: 32px;
+      padding: 20px 24px 28px;
     }
 
     .question-text {
-      font-size: 1.7rem;
+      font-size: 1.5rem;
       font-weight: 700;
-      line-height: 1.3;
+      line-height: 1.35;
       color: #0a1c2f;
-      background: #f8fafc;
-      padding: 20px 20px;
-      border-radius: 32px;
-      box-shadow: inset 0 1px 2px #00000008, 0 2px 4px rgba(0,0,0,0.02);
-      border: 1px solid #e2e8f0;
+      background: #fafcff;
+      padding: 16px 18px;
+      border-radius: 28px;
+      border: 1px solid #edf2f7;
+      margin-bottom: 8px;
     }
 
-    /* 选项列表 */
     .options-list {
       display: flex;
       flex-direction: column;
-      gap: 14px;
-      margin: 20px 0 20px;
+      gap: 12px;
+      margin: 18px 0 16px;
     }
 
     .option {
       background: white;
-      border: 1.5px solid #e2edf2;
+      border: 1.5px solid #e6edf4;
       border-radius: 60px;
-      padding: 14px 20px;
-      font-size: 1rem;
+      padding: 12px 18px;
+      font-size: 0.95rem;
       font-weight: 500;
       color: #1e2f3e;
       cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+      transition: all 0.2s ease;
       display: flex;
       align-items: center;
-      gap: 14px;
-      backdrop-filter: blur(2px);
+      gap: 12px;
     }
 
     .option:hover:not(.disabled-opt) {
-      background: #f0f6fe;
-      border-color: #8bb9fe;
-      transform: translateX(5px);
-      box-shadow: 0 5px 12px rgba(0, 20, 50, 0.08);
+      background: #f4f9fe;
+      border-color: #9bc0f0;
+      transform: translateX(4px);
     }
 
     .opt-prefix {
       font-weight: 800;
       background: #eef3fc;
-      width: 32px;
-      height: 32px;
+      width: 28px;
+      height: 28px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      border-radius: 60px;
+      border-radius: 30px;
+      font-size: 0.8rem;
       color: #2c5f8a;
-      font-size: 0.9rem;
     }
 
-    .option.disabled-opt {
+    .disabled-opt {
       cursor: default;
       opacity: 0.7;
+      pointer-events: none;
     }
 
-    /* 反馈区域 */
     .feedback-area {
-      margin: 20px 0 10px;
-      padding: 14px 20px;
+      margin: 12px 0 0;
+      padding: 12px 16px;
       border-radius: 28px;
-      background: #f1f5f9;
-      min-height: 85px;
+      background: #f8fafd;
+      min-height: 70px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
       gap: 12px;
-      transition: 0.2s;
     }
 
     .result-message {
-      font-size: 1rem;
+      font-size: 0.9rem;
       font-weight: 500;
       display: flex;
       align-items: center;
       gap: 8px;
       flex: 1;
     }
-
-    .result-message.correct {
-      color: #0f6e3f;
-    }
-
-    .result-message.wrong {
-      color: #b91c1c;
-    }
+    .result-message.correct { color: #0f6e3f; }
+    .result-message.wrong { color: #b91c1c; }
 
     .next-btn {
       background: #1e2a3e;
       border: none;
-      padding: 10px 26px;
+      padding: 8px 22px;
       border-radius: 40px;
       font-weight: 600;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       color: white;
       cursor: pointer;
       transition: 0.2s;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
-
-    .next-btn:hover {
-      background: #0f2b3f;
-      transform: scale(0.97);
-    }
+    .next-btn:hover { background: #0f2b3f; transform: scale(0.97); }
 
     .auto-skip-tip {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       color: #2b6e9f;
       background: #e0f0fe;
-      padding: 4px 12px;
+      padding: 2px 10px;
       border-radius: 50px;
-      font-weight: 500;
     }
 
     .loading-icon {
       display: inline-block;
-      width: 18px;
-      height: 18px;
+      width: 16px;
+      height: 16px;
       border: 2px solid #cbd5e1;
       border-top-color: #2c5f8a;
       border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      vertical-align: middle;
+      animation: spin 0.6s linear infinite;
     }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    /* 小动画 */
-    @keyframes gentlePop {
-      0% { transform: scale(1); }
-      80% { transform: scale(1.02); }
-      100% { transform: scale(1); }
-    }
-
-    .option-correct-feedback {
-      background: #e3f9ed;
-      border-color: #2c9a5e;
-    }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
     footer {
-      font-size: 0.7rem;
+      font-size: 0.65rem;
       text-align: center;
-      padding: 12px 24px 20px;
-      color: #7c8b9c;
-      border-top: 1px solid #ecf3f9;
+      padding: 10px 20px 14px;
+      color: #8b9bb0;
+      border-top: 1px solid #eff3f8;
       background: #fefefe;
     }
 
-    @media (max-width: 550px) {
-      .quiz-body {
-        padding: 20px;
-      }
-      .question-text {
-        font-size: 1.35rem;
-        padding: 16px;
-      }
-      .option {
-        padding: 10px 16px;
-      }
-      .score-board {
-        font-size: 0.8rem;
-      }
+    @media (max-width: 560px) {
+      .quiz-body { padding: 16px; }
+      .question-text { font-size: 1.25rem; padding: 12px; }
+      .option { padding: 10px 14px; }
     }
   </style>
 </head>
 <body>
 <div class="quiz-card">
   <div class="quiz-header">
-    <div class="badge-tag">
-      <i>🧠</i> 前端知识闯关
-    </div>
-    <div class="score-board">
-      🏆 正确 · <span id="scoreCount">0</span> / <span id="totalCount">0</span>
-    </div>
+    <div class="badge-tag"><i>🧠</i> 快问快答</div>
+    <div class="score-board">🏆 正确 · <span id="scoreCount">0</span> / <span id="totalCount">0</span></div>
   </div>
-
   <div class="quiz-body">
-    <div class="question-area">
-      <div class="question-text" id="questionText">
-        <!-- 动态题目 -->
-        加载中...
-      </div>
-    </div>
-
-    <div id="optionsContainer" class="options-list">
-      <!-- 动态选项 -->
-    </div>
-
-    <div class="feedback-area" id="feedbackArea">
+    <div class="question-text" id="questionText">加载中...</div>
+    <div id="optionsContainer" class="options-list"></div>
+    <div class="feedback-area">
       <div id="resultText" class="result-message"></div>
-      <button id="nextBtn" class="next-btn" style="display: none;">
-        ➡ 下一题
-      </button>
+      <button id="nextBtn" class="next-btn" style="display: none;">➡ 下一题</button>
     </div>
   </div>
-  <footer>
-    ✨ 答对自动跳转 · 每题随机抽选 · 持续积累知识
-  </footer>
+  <footer>✨ 答对自动跳转 · 边玩边学</footer>
 </div>
 
 <script>
-  // ---------- 全局变量 ----------
-  let currentQuestion = null;          // 当前题目对象 {id, question, options}
-  let isLocked = false;               // 防止重复提交/连点
-  let autoSkipTimer = null;           // 自动跳转计时器
-  let score = 0;                      // 正确次数
-  let totalAnswered = 0;              // 总共已答题目数（不重复计数同题目）
-  let hasAnsweredCurrent = false;     // 当前题目是否已经作答过（避免多次记分）
+  // 检测是否为嵌入模式 (根据 URL 参数 embed)
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('embed') === 'true') {
+    document.body.classList.add('embed-mode');
+  }
 
-  // DOM 元素
+  // 向父页面报告自身高度，实现 iframe 自动伸缩 (无缝嵌入)
+  function reportHeight() {
+    if (window.parent !== window) {
+      const height = document.body.scrollHeight;
+      window.parent.postMessage({ type: 'setHeight', height: height + 10 }, '*');
+    }
+  }
+
+  let currentQuestion = null;
+  let isLocked = false;
+  let autoSkipTimer = null;
+  let score = 0;
+  let totalAnswered = 0;
+  let hasAnsweredCurrent = false;
+
   const questionEl = document.getElementById('questionText');
   const optionsContainer = document.getElementById('optionsContainer');
   const nextBtn = document.getElementById('nextBtn');
@@ -322,268 +267,148 @@
   const scoreSpan = document.getElementById('scoreCount');
   const totalSpan = document.getElementById('totalCount');
 
-  // 辅助函数：更新计分板UI
   function updateScoreUI() {
     scoreSpan.innerText = score;
     totalSpan.innerText = totalAnswered;
+    reportHeight(); // 分数变化也可能导致高度变化
   }
 
-  // 清除自动跳转计时器
   function clearAutoTimer() {
-    if (autoSkipTimer) {
-      clearTimeout(autoSkipTimer);
-      autoSkipTimer = null;
-    }
+    if (autoSkipTimer) { clearTimeout(autoSkipTimer); autoSkipTimer = null; }
   }
 
-  // 重置当前题目的交互状态（清除锁、恢复选项点击、清空反馈中的额外提示）
   function resetForNewQuestion() {
-    // 清除任何待执行的自动跳转
     clearAutoTimer();
-    // 解锁答题
     isLocked = false;
     hasAnsweredCurrent = false;
-    // 隐藏下一题按钮（新题目默认隐藏，正确时自动跳转，错误时才显示手动按钮）
     nextBtn.style.display = 'none';
-    // 清空反馈样式和文字（但保留轻微占位）
     resultTextEl.innerHTML = '';
     resultTextEl.className = 'result-message';
-    // 启用所有选项 (如果选项dom存在，移除禁用样式和覆盖click)
-    const allOptions = document.querySelectorAll('.option');
-    allOptions.forEach(opt => {
-      opt.classList.remove('disabled-opt', 'option-correct-feedback');
-      // 重新绑定点击事件（在render时已经绑定，但确保移除旧有的覆盖，重新设置onclick）
-      // 实际渲染选项时会全新生成dom，不需要额外处理，但以防万一。
-    });
+    // 重新启用选项样式会在渲染时重置
   }
 
-  // 展示加载状态（请求题目时）
-  function setLoadingState(loading) {
-    if (loading) {
-      questionEl.innerHTML = '<span class="loading-icon"></span> 加载新题目...';
-      optionsContainer.innerHTML = '<div style="padding:20px; text-align:center">📡 召唤知识...</div>';
-      isLocked = true;  // 加载期间不允许任何点击
-    } else {
-      // 恢复解锁由具体题目渲染完成后根据状态设置
-    }
-  }
-
-  // 从服务端拉取随机题目
   async function loadQuestion() {
-    // 清理上一次自动跳转残留
-    clearAutoTimer();
-    // 重置旧题目相关UI锁，但保留计分
     resetForNewQuestion();
-
     setLoadingState(true);
     try {
       const res = await fetch('/api/question');
-      if (!res.ok) throw new Error('网络异常');
+      if (!res.ok) throw new Error();
       const data = await res.json();
-      currentQuestion = data;   // { id, question, options }
-      // 渲染题目和选项
+      currentQuestion = data;
       renderQuestion(currentQuestion);
-      isLocked = false;          // 题目渲染完毕允许作答
+      isLocked = false;
+      reportHeight(); // 新题目渲染后更新高度
     } catch (err) {
-      console.error(err);
-      questionEl.innerText = '⚠️ 题目加载失败，请刷新页面';
-      optionsContainer.innerHTML = '<div style="padding:16px;color:#b91c1c;">无法连接服务器，请检查网络</div>';
+      questionEl.innerText = '⚠️ 题目加载失败，请刷新';
+      optionsContainer.innerHTML = '<div style="padding:12px;color:#b91c1c;">连接不到服务器，检查网络后请刷新页面</div>';
       isLocked = true;
+    }
+    setLoadingState(false);
+  }
+
+  function setLoadingState(loading) {
+    if (loading) {
+      questionEl.innerHTML = '<span class="loading-icon"></span> 加载新题目...';
+      optionsContainer.innerHTML = '';
     }
   }
 
-  // 渲染当前题目和选项
   function renderQuestion(q) {
-    if (!q) return;
     questionEl.innerHTML = q.question;
     optionsContainer.innerHTML = '';
-    const prefixLetters = ['A', 'B', 'C', 'D'];
+    const prefix = ['A', 'B', 'C', 'D'];
     q.options.forEach((opt, idx) => {
-      const optDiv = document.createElement('div');
-      optDiv.className = 'option';
-      optDiv.setAttribute('data-opt-index', idx);
-      const prefixSpan = document.createElement('span');
-      prefixSpan.className = 'opt-prefix';
-      prefixSpan.innerText = prefixLetters[idx] || String.fromCharCode(65+idx);
-      const textSpan = document.createElement('span');
-      textSpan.innerText = opt;
-      textSpan.style.flex = '1';
-      optDiv.appendChild(prefixSpan);
-      optDiv.appendChild(textSpan);
-      // 绑定点击事件，但需要检查全局锁 && 未作答
-      optDiv.onclick = (e) => {
-        e.stopPropagation();
-        if (isLocked || hasAnsweredCurrent) return;
-        checkAnswer(idx);
-      };
-      optionsContainer.appendChild(optDiv);
+      const div = document.createElement('div');
+      div.className = 'option';
+      div.innerHTML = `<span class="opt-prefix">${prefix[idx]}</span><span style="flex:1">${opt}</span>`;
+      div.onclick = () => { if (!isLocked && !hasAnsweredCurrent) checkAnswer(idx); };
+      optionsContainer.appendChild(div);
     });
   }
 
-  // 提交答案验证
   async function checkAnswer(selectedIdx) {
-    if (isLocked || hasAnsweredCurrent || !currentQuestion) return;
-    // 锁定当前题目避免重复提交
+    if (isLocked || hasAnsweredCurrent) return;
     isLocked = true;
-    // 立即禁用所有选项视觉+取消点击 (避免再次点击)
-    const allOpts = document.querySelectorAll('.option');
-    allOpts.forEach(opt => {
-      opt.style.pointerEvents = 'none';
-      opt.classList.add('disabled-opt');
-    });
-
-    // 显示加载反馈 (小点)
-    resultTextEl.innerHTML = '<span class="loading-icon"></span> 验证答案中...';
-    resultTextEl.className = 'result-message';
-
+    document.querySelectorAll('.option').forEach(opt => { opt.style.pointerEvents = 'none'; opt.classList.add('disabled-opt'); });
+    resultTextEl.innerHTML = '<span class="loading-icon"></span> 校验中...';
     try {
       const res = await fetch('/api/answer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: currentQuestion.id,
-          answer: selectedIdx
-        })
+        body: JSON.stringify({ id: currentQuestion.id, answer: selectedIdx })
       });
       const data = await res.json();
       const isCorrect = data.correct;
-      const explanation = data.explanation || (isCorrect ? '🎉 优秀！' : '再试试下一题～');
+      const explanation = data.explanation || (isCorrect ? '🎉 漂亮！' : '再试试下一题～');
 
-      // ----- 统计答题次数（仅第一次有效）-----
       if (!hasAnsweredCurrent) {
         hasAnsweredCurrent = true;
         totalAnswered++;
-        if (isCorrect) {
-          score++;
-        }
+        if (isCorrect) score++;
         updateScoreUI();
       }
 
-      // 显示反馈信息（增强趣味）
       if (isCorrect) {
-        resultTextEl.innerHTML = `✅ 回答正确！ ${explanation}`;
+        resultTextEl.innerHTML = `✅ 正确！ ${explanation}`;
         resultTextEl.className = 'result-message correct';
-        // 正确动画：给正确选项高亮（简单高亮所选选项）
         highlightOption(selectedIdx, true);
-        // 答对自动跳转：延迟0.8秒，带来舒适节奏
         clearAutoTimer();
-        autoSkipTimer = setTimeout(() => {
-          // 自动加载下一题之前确保没有其他动作
-          if (!isLocked && hasAnsweredCurrent) {
-            // 但在setTimeout时可能又被重置？不过安全起见
-          }
-          autoSkipTimer = null;
-          loadQuestion();   // 自动跳转
-        }, 750);
-        // 自动跳转时隐藏手动下一题按钮
+        autoSkipTimer = setTimeout(() => { loadQuestion(); }, 700);
         nextBtn.style.display = 'none';
-        // 增加额外提示小尾巴
-        const tipSpan = document.createElement('span');
-        tipSpan.className = 'auto-skip-tip';
-        tipSpan.innerText = '✨ 答对，自动跳转下一题';
-        if (!document.querySelector('.auto-skip-tip')) {
-          resultTextEl.appendChild(document.createTextNode(' '));
-          resultTextEl.appendChild(tipSpan);
-          setTimeout(() => {
-            if (tipSpan.parentNode) tipSpan.remove();
-          }, 700);
-        }
+        const tip = document.createElement('span');
+        tip.className = 'auto-skip-tip';
+        tip.innerText = '自动跳转下一题';
+        resultTextEl.appendChild(tip);
+        setTimeout(() => tip.remove(), 650);
       } else {
-        // 回答错误
         resultTextEl.innerHTML = `❌ ${explanation}`;
         resultTextEl.className = 'result-message wrong';
         highlightOption(selectedIdx, false);
-        // 显示手动下一题按钮，让用户自己点击继续
         nextBtn.style.display = 'inline-flex';
-        // 不清除自动计时器（无自动跳转）
-        // 但为了避免残留计时器干扰，清除一下也无妨（反正没有正确跳转）
         clearAutoTimer();
       }
-      // 如果已经正确并且等待自动跳转，此时不应再解锁（避免中途再点选项），已经锁定,跳转时会调用reset解锁。
-      // 如果错误，不解锁选项，因为必须点击下一题才能继续，保持选项无法点击状态，符合预期（防止重复选同一题）
-      // 只有下次loadQuestion时才会重置锁。所以无需额外解锁。
+      reportHeight();
     } catch (err) {
-      console.error('请求失败', err);
-      resultTextEl.innerHTML = '⚠️ 网络开小差了，请点下一题重试';
+      resultTextEl.innerHTML = '⚠️ 请求失败，点击下一题重试';
       resultTextEl.className = 'result-message wrong';
-      // 请求失败后仍然显示下一题按钮，便于重试加载
       nextBtn.style.display = 'inline-flex';
-      isLocked = false;   // 解锁但需注意避免混乱，但原题目仍然保留不能再次提交（hasAnsweredCurrent = false？最好设false让用户可以再试一次，但为了避免混乱可以仅开启手动加载）
-      // 更优雅: 允许用户点击下一题重新加载, 但仍然保持不能重复提交同一个题目? 手动调用loadQuestion解决。
-      // 但不清除hasAnsweredCurrent，防止再次提交。因为本次未正确记录成绩，但界面可手动刷新题目
-      // 让用户可以点击下一题刷题，不加重计分。
-      // 若想要保留一致性，hasAnsweredCurrent设为true避免对同一题目二次提交答案
-      if (!hasAnsweredCurrent) {
-        // 如果因网络失败没计入total则不计入，但不重复提交相同题目
-        hasAnsweredCurrent = true;
-      }
-      // 解除选项锁定视觉效果（让用户知道可点击下一题，但无法再次提交答案）
+      if (!hasAnsweredCurrent) hasAnsweredCurrent = true;
     } finally {
-      // 当非正确跳转逻辑，确保按钮可见性控制已完成；如果正确分支时不显示nextBtn已经处理
-      // 避免多次加载冲突，对于正确自动跳转不需要额外动作
-      if (!autoSkipTimer) {
-        // 如果没有自动跳转计时器(错误或网络异常)，解锁一部分？但是选项已经pointer-events: none，不再允许点击提交，手动下一题会重新加载，这很合理
-        // 无需额外解锁点击
-      }
+      // 无需额外解锁，等待下一题重置
     }
   }
 
-  // 高亮所选选项（辅助视觉反馈）
-  function highlightOption(selectedIdx, isCorrect) {
-    const allOptionsDom = document.querySelectorAll('.option');
-    if (allOptionsDom[selectedIdx]) {
-      const opt = allOptionsDom[selectedIdx];
+  function highlightOption(idx, isCorrect) {
+    const opts = document.querySelectorAll('.option');
+    if (opts[idx]) {
       if (isCorrect) {
-        opt.style.backgroundColor = '#e0f9e8';
-        opt.style.borderColor = '#2c9a5e';
-        opt.classList.add('option-correct-feedback');
+        opts[idx].style.backgroundColor = '#e0f9e8';
+        opts[idx].style.borderColor = '#2c9a5e';
       } else {
-        opt.style.backgroundColor = '#ffe8e8';
-        opt.style.borderColor = '#e56c6c';
-        // 错误时短暂抖动
-        opt.style.transform = 'translateX(3px)';
-        setTimeout(() => {
-          if (opt) opt.style.transform = '';
-        }, 200);
+        opts[idx].style.backgroundColor = '#ffe8e8';
+        opts[idx].style.borderColor = '#e56c6c';
       }
     }
   }
 
-  // 手动下一题（供按钮调用）
-  function manualNext() {
-    // 清除自动跳转计时器，避免冲突
-    clearAutoTimer();
-    // 如果当前题目还没加载完、或者锁状态但不影响手动跳转(用户主动)
-    // 直接加载新题目前重置所有状态
-    if (autoSkipTimer) clearAutoTimer();
-    // 重置当前题目的“已答标志”，避免遗留影响
-    // 但重要的是清理界面和加载新题目
-    // 如果上一个请求还没完成，锁标志作用；但手动点击可以强行跳过加载新题，建议先取消任何pending? 但fetch无法取消, 不过跳过逻辑无伤大雅
-    // 手动加载下一题时确保不再触发旧的checkAnswer回调
-    isLocked = true;   // 防止在跳转过程中偶然点击
-    loadQuestion();
-  }
-
-  // 绑定手动下一题事件
   nextBtn.addEventListener('click', () => {
-    // 手动跳转时清除自动计时器（安全）
-    if (autoSkipTimer) {
-      clearTimeout(autoSkipTimer);
-      autoSkipTimer = null;
-    }
-    manualNext();
+    clearAutoTimer();
+    loadQuestion();
   });
 
-  // 初始加载题目
+  // 监听父页面发来的高度请求
+  window.addEventListener('message', (e) => {
+    if (e.data && e.data.type === 'getHeight') {
+      reportHeight();
+    }
+  });
+
+  // 初始化并初次报告高度
   loadQuestion();
-
-  // 额外: 增加键盘辅助（按回车跳转可选，提升体验，但不必须，加上无妨但避免干扰）
-  window.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && nextBtn.style.display === 'inline-flex' && nextBtn.offsetParent !== null) {
-      e.preventDefault();
-      manualNext();
-    }
-  });
+  window.addEventListener('load', () => reportHeight());
+  window.addEventListener('resize', () => reportHeight());
+  // 每次DOM更新后略微延迟报告高度 (MutationObserver可选，但简单延迟足够)
+  setInterval(() => reportHeight(), 800);
 </script>
 </body>
 </html>
