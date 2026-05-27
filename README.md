@@ -36,7 +36,7 @@
 <!-- ========== 脚本结束 ========== -->
 ```
 
-2. 在markdown文章中加入以下代码即可嵌入对应功能
+## 2. 在markdown文章中加入以下代码即可嵌入对应功能
 ```JavaScript
 <iframe 
   src="https://quiz.slowbirdie.top?embed=true" 
