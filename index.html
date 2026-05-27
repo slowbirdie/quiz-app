@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>知识闯关 · 互动测验</title>
+  <title>知识闯关 · 全题型互动测验</title>
   <style>
-    /* 全局重置，确保嵌入时无额外边距和滚动 */
     * {
       margin: 0;
       padding: 0;
@@ -13,39 +12,31 @@
     }
 
     body {
-      /* 默认背景透明，适合嵌入任何底色页面 */
       background: transparent;
       font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
       min-height: auto;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 8px;  /* 内边距减小，让内容更贴合 */
+      padding: 8px;
     }
 
-    /* 主卡片 - 适配嵌入模式的精致样式 */
     .quiz-card {
-      max-width: 650px;
+      max-width: 700px;
       width: 100%;
       background: rgba(255, 255, 255, 0.98);
       border-radius: 32px;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.03);
       overflow: hidden;
-      transition: all 0.2s ease;
-      /* 避免 margin 塌陷引起额外滚动 */
       margin: 0 auto;
     }
 
-    /* 如果通过 URL 参数 ?embed=true 则进一步微调嵌入样式 */
     body.embed-mode .quiz-card {
       box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03), 0 0 0 1px #eef2f6;
       border-radius: 28px;
     }
-    body.embed-mode {
-      padding: 0;
-    }
+    body.embed-mode { padding: 0; }
 
-    /* 头部计分栏 (精致紧凑) */
     .quiz-header {
       background: #ffffffdd;
       padding: 16px 24px 12px 24px;
@@ -66,12 +57,7 @@
       font-size: 0.85rem;
       letter-spacing: 0.3px;
     }
-
-    .score-board span {
-      color: #ffd966;
-      font-size: 1.1rem;
-      margin-right: 4px;
-    }
+    .score-board span { color: #ffd966; font-size: 1.1rem; margin-right: 4px; }
 
     .badge-tag {
       background: #eef2ff;
@@ -84,11 +70,16 @@
       align-items: center;
       gap: 6px;
     }
-
-    /* 主体内边距优化 */
-    .quiz-body {
-      padding: 20px 24px 28px;
+    .type-badge {
+      background: #e6f0ff;
+      padding: 4px 10px;
+      border-radius: 40px;
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: #0f3b6f;
     }
+
+    .quiz-body { padding: 20px 24px 28px; }
 
     .question-text {
       font-size: 1.5rem;
@@ -102,13 +93,15 @@
       margin-bottom: 8px;
     }
 
+    /* 动态控件区域 */
+    .dynamic-control {
+      margin: 18px 0 16px;
+    }
     .options-list {
       display: flex;
       flex-direction: column;
       gap: 12px;
-      margin: 18px 0 16px;
     }
-
     .option {
       background: white;
       border: 1.5px solid #e6edf4;
@@ -123,13 +116,11 @@
       align-items: center;
       gap: 12px;
     }
-
     .option:hover:not(.disabled-opt) {
       background: #f4f9fe;
       border-color: #9bc0f0;
       transform: translateX(4px);
     }
-
     .opt-prefix {
       font-weight: 800;
       background: #eef3fc;
@@ -142,11 +133,47 @@
       font-size: 0.8rem;
       color: #2c5f8a;
     }
-
-    .disabled-opt {
-      cursor: default;
-      opacity: 0.7;
-      pointer-events: none;
+    /* 复选框/单选框自定义 */
+    .custom-check, .custom-radio {
+      width: 20px;
+      height: 20px;
+      accent-color: #2c5f8a;
+    }
+    .choice-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 16px;
+      background: #fafcff;
+      border-radius: 60px;
+      border: 1px solid #e2eaf1;
+    }
+    .fill-input, .code-textarea {
+      width: 100%;
+      padding: 14px 18px;
+      border-radius: 28px;
+      border: 1.5px solid #e2eaf1;
+      font-size: 0.95rem;
+      font-family: inherit;
+      transition: 0.2s;
+      background: white;
+    }
+    .fill-input:focus, .code-textarea:focus {
+      outline: none;
+      border-color: #5f9eef;
+      box-shadow: 0 0 0 3px rgba(47, 128, 237, 0.1);
+    }
+    .code-textarea {
+      font-family: 'JetBrains Mono', monospace;
+      min-height: 120px;
+      resize: vertical;
+    }
+    .truefalse-group {
+      display: flex;
+      gap: 20px;
+      background: #f8fafd;
+      padding: 12px 20px;
+      border-radius: 60px;
     }
 
     .feedback-area {
@@ -154,26 +181,21 @@
       padding: 12px 16px;
       border-radius: 28px;
       background: #f8fafd;
-      min-height: 70px;
+      min-height: 80px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
       gap: 12px;
     }
-
-    .result-message {
-      font-size: 0.9rem;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex: 1;
-    }
+    .result-message { font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 8px; flex: 1; }
     .result-message.correct { color: #0f6e3f; }
     .result-message.wrong { color: #b91c1c; }
-
-    .next-btn {
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+    }
+    .submit-btn, .next-btn {
       background: #1e2a3e;
       border: none;
       padding: 8px 22px;
@@ -184,8 +206,8 @@
       cursor: pointer;
       transition: 0.2s;
     }
-    .next-btn:hover { background: #0f2b3f; transform: scale(0.97); }
-
+    .submit-btn:hover, .next-btn:hover { background: #0f2b3f; transform: scale(0.97); }
+    .submit-btn:disabled, .next-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
     .auto-skip-tip {
       font-size: 0.7rem;
       color: #2b6e9f;
@@ -193,7 +215,6 @@
       padding: 2px 10px;
       border-radius: 50px;
     }
-
     .loading-icon {
       display: inline-block;
       width: 16px;
@@ -204,7 +225,6 @@
       animation: spin 0.6s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-
     footer {
       font-size: 0.65rem;
       text-align: center;
@@ -213,55 +233,53 @@
       border-top: 1px solid #eff3f8;
       background: #fefefe;
     }
-
     @media (max-width: 560px) {
       .quiz-body { padding: 16px; }
       .question-text { font-size: 1.25rem; padding: 12px; }
-      .option { padding: 10px 14px; }
     }
   </style>
 </head>
 <body>
 <div class="quiz-card">
   <div class="quiz-header">
-    <div class="badge-tag"><i>🧠</i> 快问快答</div>
+    <div class="badge-tag"><i>📚</i> 全题型闯关</div>
     <div class="score-board">🏆 正确 · <span id="scoreCount">0</span> / <span id="totalCount">0</span></div>
   </div>
   <div class="quiz-body">
     <div class="question-text" id="questionText">加载中...</div>
-    <div id="optionsContainer" class="options-list"></div>
+    <div id="dynamicControl" class="dynamic-control"></div>
     <div class="feedback-area">
       <div id="resultText" class="result-message"></div>
-      <button id="nextBtn" class="next-btn" style="display: none;">➡ 下一题</button>
+      <div class="action-buttons">
+        <button id="submitBtn" class="submit-btn">✨ 提交答案</button>
+        <button id="nextBtn" class="next-btn" style="display: none;">➡ 下一题</button>
+      </div>
     </div>
   </div>
-  <footer>✨ 答对自动跳转 · 边玩边学</footer>
+  <footer>✍️ 提交答案后自动判题 · 正确自动跳转下一题</footer>
 </div>
 
 <script>
-  // 检测是否为嵌入模式 (根据 URL 参数 embed)
   const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get('embed') === 'true') {
-    document.body.classList.add('embed-mode');
-  }
+  if (urlParams.get('embed') === 'true') document.body.classList.add('embed-mode');
 
-  // 向父页面报告自身高度，实现 iframe 自动伸缩 (无缝嵌入)
   function reportHeight() {
     if (window.parent !== window) {
       const height = document.body.scrollHeight;
-      window.parent.postMessage({ type: 'setHeight', height: height + 10 }, '*');
+      window.parent.postMessage({ type: 'setHeight', height: height + 12 }, '*');
     }
   }
 
   let currentQuestion = null;
-  let isLocked = false;
+  let isLocked = false;      // 是否已作答完毕
   let autoSkipTimer = null;
   let score = 0;
   let totalAnswered = 0;
   let hasAnsweredCurrent = false;
 
   const questionEl = document.getElementById('questionText');
-  const optionsContainer = document.getElementById('optionsContainer');
+  const dynamicControl = document.getElementById('dynamicControl');
+  const submitBtn = document.getElementById('submitBtn');
   const nextBtn = document.getElementById('nextBtn');
   const resultTextEl = document.getElementById('resultText');
   const scoreSpan = document.getElementById('scoreCount');
@@ -270,7 +288,7 @@
   function updateScoreUI() {
     scoreSpan.innerText = score;
     totalSpan.innerText = totalAnswered;
-    reportHeight(); // 分数变化也可能导致高度变化
+    reportHeight();
   }
 
   function clearAutoTimer() {
@@ -281,65 +299,146 @@
     clearAutoTimer();
     isLocked = false;
     hasAnsweredCurrent = false;
+    submitBtn.disabled = false;
+    submitBtn.style.display = 'inline-flex';
     nextBtn.style.display = 'none';
     resultTextEl.innerHTML = '';
     resultTextEl.className = 'result-message';
-    // 重新启用选项样式会在渲染时重置
   }
 
-  async function loadQuestion() {
-    resetForNewQuestion();
-    setLoadingState(true);
-    try {
-      const res = await fetch('/api/question');
-      if (!res.ok) throw new Error();
-      const data = await res.json();
-      currentQuestion = data;
-      renderQuestion(currentQuestion);
-      isLocked = false;
-      reportHeight(); // 新题目渲染后更新高度
-    } catch (err) {
-      questionEl.innerText = '⚠️ 题目加载失败，请刷新';
-      optionsContainer.innerHTML = '<div style="padding:12px;color:#b91c1c;">连接不到服务器，检查网络后请刷新页面</div>';
-      isLocked = true;
+  // 收集用户答案 (根据题型返回不同格式)
+  function collectUserAnswer(type) {
+    if (type === 'single') {
+      const selected = document.querySelector('input[name="singleOption"]:checked');
+      return selected ? parseInt(selected.value) : null;
+    } else if (type === 'multiple') {
+      const checkboxes = document.querySelectorAll('input[name="multiOption"]:checked');
+      return Array.from(checkboxes).map(cb => parseInt(cb.value)).sort((a,b)=>a-b);
+    } else if (type === 'truefalse') {
+      const selected = document.querySelector('input[name="tfOption"]:checked');
+      return selected ? selected.value === 'true' : null;
+    } else if (type === 'fill') {
+      const input = document.getElementById('fillInput');
+      return input ? input.value.trim() : '';
+    } else if (type === 'code') {
+      const textarea = document.getElementById('codeInput');
+      return textarea ? textarea.value.trim() : '';
     }
-    setLoadingState(false);
+    return null;
   }
 
-  function setLoadingState(loading) {
-    if (loading) {
-      questionEl.innerHTML = '<span class="loading-icon"></span> 加载新题目...';
-      optionsContainer.innerHTML = '';
+  // 渲染不同题型
+  function renderQuestionByType(q) {
+    dynamicControl.innerHTML = '';
+    const type = q.type;
+    if (type === 'single' && q.options) {
+      const container = document.createElement('div');
+      container.className = 'options-list';
+      const prefix = ['A', 'B', 'C', 'D', 'E'];
+      q.options.forEach((opt, idx) => {
+        const div = document.createElement('div');
+        div.className = 'option';
+        div.innerHTML = `
+          <input type="radio" name="singleOption" value="${idx}" id="opt_${idx}" style="margin-right: 6px; transform: scale(1.05);">
+          <span class="opt-prefix">${prefix[idx]}</span>
+          <span style="flex:1">${opt}</span>
+        `;
+        div.querySelector('input').addEventListener('change', (e) => e.stopPropagation());
+        div.addEventListener('click', (e) => {
+          const radio = div.querySelector('input');
+          if (!radio.disabled) radio.checked = true;
+        });
+        container.appendChild(div);
+      });
+      dynamicControl.appendChild(container);
+    } 
+    else if (type === 'multiple' && q.options) {
+      const container = document.createElement('div');
+      container.className = 'options-list';
+      const prefix = ['A', 'B', 'C', 'D', 'E'];
+      q.options.forEach((opt, idx) => {
+        const div = document.createElement('div');
+        div.className = 'choice-item';
+        div.innerHTML = `
+          <input type="checkbox" name="multiOption" value="${idx}" id="multi_${idx}" class="custom-check">
+          <label for="multi_${idx}" style="flex:1; cursor:pointer;">${prefix[idx]}. ${opt}</label>
+        `;
+        container.appendChild(div);
+      });
+      dynamicControl.appendChild(container);
+    }
+    else if (type === 'truefalse') {
+      const tfDiv = document.createElement('div');
+      tfDiv.className = 'truefalse-group';
+      tfDiv.innerHTML = `
+        <label style="display: flex; align-items: center; gap: 8px;"><input type="radio" name="tfOption" value="true"> ✅ 正确</label>
+        <label style="display: flex; align-items: center; gap: 8px;"><input type="radio" name="tfOption" value="false"> ❌ 错误</label>
+      `;
+      dynamicControl.appendChild(tfDiv);
+    }
+    else if (type === 'fill') {
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.placeholder = '请输入你的答案...';
+      input.className = 'fill-input';
+      input.id = 'fillInput';
+      dynamicControl.appendChild(input);
+    }
+    else if (type === 'code') {
+      const textarea = document.createElement('textarea');
+      textarea.placeholder = '// 在此编写代码或简答\n// 例如: console.log("Hello World");';
+      textarea.className = 'code-textarea';
+      textarea.id = 'codeInput';
+      dynamicControl.appendChild(textarea);
+    } else {
+      dynamicControl.innerHTML = '<div style="padding:12px;color:#888;">暂不支持题型</div>';
+    }
+    reportHeight();
+  }
+
+  function disableControls(type) {
+    if (type === 'single') {
+      document.querySelectorAll('input[name="singleOption"]').forEach(r => r.disabled = true);
+    } else if (type === 'multiple') {
+      document.querySelectorAll('input[name="multiOption"]').forEach(cb => cb.disabled = true);
+    } else if (type === 'truefalse') {
+      document.querySelectorAll('input[name="tfOption"]').forEach(r => r.disabled = true);
+    } else if (type === 'fill') {
+      const inp = document.getElementById('fillInput');
+      if (inp) inp.disabled = true;
+    } else if (type === 'code') {
+      const ta = document.getElementById('codeInput');
+      if (ta) ta.disabled = true;
     }
   }
 
-  function renderQuestion(q) {
-    questionEl.innerHTML = q.question;
-    optionsContainer.innerHTML = '';
-    const prefix = ['A', 'B', 'C', 'D'];
-    q.options.forEach((opt, idx) => {
-      const div = document.createElement('div');
-      div.className = 'option';
-      div.innerHTML = `<span class="opt-prefix">${prefix[idx]}</span><span style="flex:1">${opt}</span>`;
-      div.onclick = () => { if (!isLocked && !hasAnsweredCurrent) checkAnswer(idx); };
-      optionsContainer.appendChild(div);
-    });
-  }
+  async function handleSubmit() {
+    if (isLocked || hasAnsweredCurrent || !currentQuestion) {
+      return;
+    }
+    const userAnswer = collectUserAnswer(currentQuestion.type);
+    if (userAnswer === null || (currentQuestion.type === 'multiple' && userAnswer.length === 0) ||
+        (currentQuestion.type === 'fill' && userAnswer === '') ||
+        (currentQuestion.type === 'code' && userAnswer === '')) {
+      resultTextEl.innerHTML = '⚠️ 请填写/选择答案后再提交';
+      resultTextEl.className = 'result-message wrong';
+      return;
+    }
 
-  async function checkAnswer(selectedIdx) {
-    if (isLocked || hasAnsweredCurrent) return;
     isLocked = true;
-    document.querySelectorAll('.option').forEach(opt => { opt.style.pointerEvents = 'none'; opt.classList.add('disabled-opt'); });
-    resultTextEl.innerHTML = '<span class="loading-icon"></span> 校验中...';
+    submitBtn.disabled = true;
+    disableControls(currentQuestion.type);
+    resultTextEl.innerHTML = '<span class="loading-icon"></span> 批阅中...';
+
     try {
       const res = await fetch('/api/answer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: currentQuestion.id, answer: selectedIdx })
+        body: JSON.stringify({ id: currentQuestion.id, answer: userAnswer })
       });
       const data = await res.json();
       const isCorrect = data.correct;
-      const explanation = data.explanation || (isCorrect ? '🎉 漂亮！' : '再试试下一题～');
+      const explanation = data.explanation || (isCorrect ? '🎉 回答精彩！' : '再试试下一题～');
 
       if (!hasAnsweredCurrent) {
         hasAnsweredCurrent = true;
@@ -351,43 +450,61 @@
       if (isCorrect) {
         resultTextEl.innerHTML = `✅ 正确！ ${explanation}`;
         resultTextEl.className = 'result-message correct';
-        highlightOption(selectedIdx, true);
         clearAutoTimer();
         autoSkipTimer = setTimeout(() => { loadQuestion(); }, 700);
+        submitBtn.style.display = 'none';
         nextBtn.style.display = 'none';
-        const tip = document.createElement('span');
-        tip.className = 'auto-skip-tip';
-        tip.innerText = '自动跳转下一题';
-        resultTextEl.appendChild(tip);
-        setTimeout(() => tip.remove(), 650);
+        const tipSpan = document.createElement('span');
+        tipSpan.className = 'auto-skip-tip';
+        tipSpan.innerText = '自动跳转下一题';
+        resultTextEl.appendChild(tipSpan);
+        setTimeout(() => tipSpan?.remove(), 650);
       } else {
         resultTextEl.innerHTML = `❌ ${explanation}`;
         resultTextEl.className = 'result-message wrong';
-        highlightOption(selectedIdx, false);
+        submitBtn.style.display = 'none';
         nextBtn.style.display = 'inline-flex';
         clearAutoTimer();
       }
       reportHeight();
     } catch (err) {
-      resultTextEl.innerHTML = '⚠️ 请求失败，点击下一题重试';
+      resultTextEl.innerHTML = '⚠️ 请求失败，请重试';
       resultTextEl.className = 'result-message wrong';
-      nextBtn.style.display = 'inline-flex';
+      submitBtn.disabled = false;
+      isLocked = false;
       if (!hasAnsweredCurrent) hasAnsweredCurrent = true;
-    } finally {
-      // 无需额外解锁，等待下一题重置
     }
   }
 
-  function highlightOption(idx, isCorrect) {
-    const opts = document.querySelectorAll('.option');
-    if (opts[idx]) {
-      if (isCorrect) {
-        opts[idx].style.backgroundColor = '#e0f9e8';
-        opts[idx].style.borderColor = '#2c9a5e';
-      } else {
-        opts[idx].style.backgroundColor = '#ffe8e8';
-        opts[idx].style.borderColor = '#e56c6c';
-      }
+  async function loadQuestion() {
+    resetForNewQuestion();
+    setLoading(true);
+    try {
+      const res = await fetch('/api/question');
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      currentQuestion = data;
+      questionEl.innerHTML = data.question;
+      renderQuestionByType(currentQuestion);
+      isLocked = false;
+      hasAnsweredCurrent = false;
+      submitBtn.disabled = false;
+      submitBtn.style.display = 'inline-flex';
+      nextBtn.style.display = 'none';
+      resultTextEl.innerHTML = '';
+      reportHeight();
+    } catch (err) {
+      questionEl.innerText = '⚠️ 加载题目失败，请刷新页面';
+      dynamicControl.innerHTML = '<div style="padding:12px;color:#b91c1c;">无法连接服务器，请检查网络</div>';
+      isLocked = true;
+    }
+    setLoading(false);
+  }
+
+  function setLoading(loading) {
+    if (loading) {
+      questionEl.innerHTML = '<span class="loading-icon"></span> 加载新奇题目...';
+      dynamicControl.innerHTML = '';
     }
   }
 
@@ -395,19 +512,15 @@
     clearAutoTimer();
     loadQuestion();
   });
+  submitBtn.addEventListener('click', handleSubmit);
 
-  // 监听父页面发来的高度请求
   window.addEventListener('message', (e) => {
-    if (e.data && e.data.type === 'getHeight') {
-      reportHeight();
-    }
+    if (e.data && e.data.type === 'getHeight') reportHeight();
   });
 
-  // 初始化并初次报告高度
   loadQuestion();
   window.addEventListener('load', () => reportHeight());
   window.addEventListener('resize', () => reportHeight());
-  // 每次DOM更新后略微延迟报告高度 (MutationObserver可选，但简单延迟足够)
   setInterval(() => reportHeight(), 800);
 </script>
 </body>
